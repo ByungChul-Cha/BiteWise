@@ -30,3 +30,36 @@ class UserLoginSerializer(serializers.Serializer) :
             raise serializers.ValidationError("이메일 또는 비밀번호가 올바르지 않습니다.")
         data['user'] = user
         return data
+    
+    
+class UserNameUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("name",)
+
+    def validate_name(self, value):
+        if not value or not str(value).strip():
+            raise serializers.ValidationError("이름을 입력해주세요.")
+        return str(value).strip()
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        user = self.context.get("user")
+        if user is None:
+            raise serializers.ValidationError("사용자 컨텍스트가 필요합니다.")
+
+        current = data.get("current_password")
+        new = data.get("new_password")
+
+        if not user.check_password(current):
+            raise serializers.ValidationError("현재 비밀번호가 올바르지 않습니다.")
+        if current == new:
+            raise serializers.ValidationError("새 비밀번호가 현재 비밀번호와 같습니다.")
+        if new is None or len(new) < 8:
+            raise serializers.ValidationError("새 비밀번호는 8자 이상이어야 합니다.")
+        return data
+

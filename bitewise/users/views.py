@@ -11,7 +11,7 @@ from .serializers import (
     UserNameUpdateSerializer,
     PasswordChangeSerializer,
 )
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 
 class UserSignupView(APIView) :
     @swagger_auto_schema(request_body=UserSignupSerializer)
@@ -71,3 +71,16 @@ class PasswordChangeView(APIView):
                 {"message": "비밀번호 변경 성공!"}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLogoutView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(request_body=None)
+    def post(self, request):
+        logout(request)
+        resp = Response({"message": "로그아웃 성공!"}, status=status.HTTP_200_OK)
+        resp.delete_cookie("sessionid")
+        resp.delete_cookie("csrftoken")
+        return resp

@@ -65,6 +65,7 @@ class PasswordChangeView(APIView):
         )
         if serializer.is_valid():
             user = request.user
+            # set_password()만 호출하면 자동 로그아웃됨
             user.set_password(serializer.validated_data["new_password"])
             user.save()
             return Response(

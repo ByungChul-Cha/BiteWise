@@ -59,7 +59,7 @@ class PasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError("현재 비밀번호가 올바르지 않습니다.")
         if current == new:
             raise serializers.ValidationError("새 비밀번호가 현재 비밀번호와 같습니다.")
-        if new is None or len(new) < 8:
-            raise serializers.ValidationError("새 비밀번호는 8자 이상이어야 합니다.")
+        if new is None:
+            raise serializers.ValidationError("새 비밀번호를 입력해주세요.")
         return data
 

@@ -1,0 +1,4 @@
+enum AiMode {
+  food,
+  ocr,
+}

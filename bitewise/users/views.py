@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .serializers import (
     UserSignupSerializer,
     UserLoginSerializer,
-    UserNameUpdateSerializer,
+    UserUpdateSerializer,
     PasswordChangeSerializer,
 )
 from django.contrib.auth import login, logout
@@ -36,13 +36,13 @@ class UserLoginView(APIView) :
             },status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class UserNameUpdateView(APIView):
+class UserUpdateView(APIView):
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(request_body=UserNameUpdateSerializer)
+    @swagger_auto_schema(request_body=UserUpdateSerializer)
     def patch(self, request):
-        serializer = UserNameUpdateSerializer(
+        serializer = UserUpdateSerializer(
             instance=request.user, data=request.data, partial=True
         )
         if serializer.is_valid():
@@ -81,7 +81,7 @@ class UserLogoutView(APIView):
     @swagger_auto_schema(request_body=None)
     def post(self, request):
         logout(request)
-        resp = Response({"message": "로그아웃 성공!"}, status=status.HTTP_200_OK)
-        resp.delete_cookie("sessionid")
-        resp.delete_cookie("csrftoken")
-        return resp
+        response = Response({"message": "로그아웃 성공!"}, status=status.HTTP_200_OK)
+        response.delete_cookie("sessionid")
+        response.delete_cookie("csrftoken")
+        return response

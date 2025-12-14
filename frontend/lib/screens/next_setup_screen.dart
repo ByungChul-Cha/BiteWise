@@ -1,4 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../constants/api.dart';
+import '../models/signup_data.dart';
 
 class NextSetupScreen extends StatefulWidget {
   const NextSetupScreen({super.key});
@@ -12,6 +18,25 @@ class _NextSetupScreenState extends State<NextSetupScreen> {
   String _carbs = '200g';
   String _protein = '100g';
   String _fat = '50g';
+  bool _isSubmitting = false;
+  SignupData? _signupData;
+
+  String _extractErrorMessage(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        if (decoded['message'] is String) return decoded['message'] as String;
+        if (decoded.isNotEmpty) {
+          final firstValue = decoded.values.first;
+          if (firstValue is List && firstValue.isNotEmpty) {
+            return firstValue.first.toString();
+          }
+          if (firstValue is String) return firstValue;
+        }
+      }
+    } catch (_) {}
+    return '회원가입에 실패했습니다. 입력값을 확인해주세요.';
+  }
 
   Future<void> _showEditDialog(BuildContext context, String label, String currentValue) async {
     final TextEditingController controller = TextEditingController(text: currentValue);
@@ -59,6 +84,41 @@ class _NextSetupScreenState extends State<NextSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _signupData ??= ModalRoute.of(context)?.settings.arguments as SignupData?;
+
+    void showError(String msg) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    }
+
+    Future<void> submitSignup() async {
+      if (_signupData == null) {
+        showError('회원가입 정보가 없습니다. 처음 화면으로 돌아가 다시 시도해주세요.');
+        Navigator.popUntil(context, ModalRoute.withName('/setup'));
+        return;
+      }
+      if (_isSubmitting) return;
+      setState(() => _isSubmitting = true);
+      try {
+        final resp = await http.post(
+          signupUri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(_signupData!.toJson()),
+        );
+        if (resp.statusCode == 201) {
+          if (!mounted) return;
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+          return;
+        }
+        showError(_extractErrorMessage(resp.body));
+      } catch (_) {
+        showError('회원가입 요청에 실패했습니다. 네트워크를 확인해주세요.');
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
+    }
+
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -156,11 +216,17 @@ class _NextSetupScreenState extends State<NextSetupScreen> {
               right: 30,
               child: FloatingActionButton(
                 heroTag: 'nextButtonTag',
-                onPressed: () {
-                  Navigator.pushNamed(context, '/home');
-                },
-                backgroundColor: const Color(0xFF2DB65A),
-                child: const Icon(Icons.arrow_forward, color: Colors.white),
+                onPressed: _isSubmitting ? null : submitSignup,
+                backgroundColor: _isSubmitting ? Colors.grey[400] : const Color(0xFF2DB65A),
+                child: _isSubmitting
+                    ? const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.arrow_forward, color: Colors.white),
               ),
             ),
           ],

@@ -12,3 +12,4 @@ String get apiBaseUrl {
 }
 
 Uri get loginUri => Uri.parse('$apiBaseUrl/api/users/login/');
+Uri get signupUri => Uri.parse('$apiBaseUrl/api/users/signup/');

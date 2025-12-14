@@ -19,3 +19,4 @@ requests==2.32.4
 python-decouple==3.8
 drf-yasg==1.21.11
 cryptography==46.0.3
+django-cors-headers==4.6.0

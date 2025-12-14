@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://10.0.2.2:8000',
 ]
 
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg', # Swager 세팅
+    'corsheaders',
     'users',
 ]
 
@@ -55,6 +57,7 @@ AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -138,3 +141,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS settings for local development / Flutter web
+CORS_ALLOW_ALL_ORIGINS = True  # 개발 편의를 위해 전체 허용 (배포 시 제한 필요)
+CORS_ALLOW_CREDENTIALS = True
+# If you prefer to lock down instead of allow all, comment the line above and set:
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'http://localhost:8000',
+#     'http://127.0.0.1:8000',
+#     'http://10.0.2.2:8000',
+# ]
